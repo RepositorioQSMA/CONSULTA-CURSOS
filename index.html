@@ -14,26 +14,28 @@
       text-align: center;
       font-size: 22px;
     }
-
     h2 {
       margin-top: 25px;
-      font-size: 20px;
+      font-size: 18px;
+      color: #333;
+      border-bottom: 2px solid #ccc;
+      padding-bottom: 4px;
     }
-
     .curso-item {
       background: #fff;
       padding: 12px;
       margin: 10px 0;
       border-radius: 8px;
       display: flex;
-      align-items: center;
-      gap: 10px;
+      align-items: flex-start;
+      gap: 12px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     .bolinha {
       width: 16px;
       height: 16px;
       border-radius: 50%;
+      flex-shrink: 0; /* <<< impede deformação */
     }
     .vermelha { background: #e60000; }
     .verde { background: #00a000; }
@@ -44,11 +46,11 @@
 
 <h1 id="nomeColaborador">Carregando...</h1>
 
-<h2>Cursos Ativos</h2>
-<div id="ativos"></div>
+<h2 id="tituloAtivos" style="display:none;">Cursos Ativos</h2>
+<div id="cursosAtivos"></div>
 
-<h2>Cursos Vencidos</h2>
-<div id="vencidos"></div>
+<h2 id="tituloVencidos" style="display:none;">Cursos Vencidos</h2>
+<div id="cursosVencidos"></div>
 
 <script>
 async function carregarDados() {
@@ -69,13 +71,14 @@ async function carregarDados() {
     return;
   }
 
-  document.getElementById("nomeColaborador").innerText = lista[0]["Funcionário"];  
+  document.getElementById("nomeColaborador").innerText = lista[0]["Funcionário"];
 
-  const ativos = document.getElementById("ativos");
-  const vencidos = document.getElementById("vencidos");
+  const ativos = [];
+  const vencidos = [];
+
+  const hoje = new Date();
 
   lista.forEach(item => {
-    const hoje = new Date();
     const venc = new Date(item["Vencimento"].split("/").reverse().join("-"));
     const diffDias = Math.floor((venc - hoje) / (1000*60*60*24));
 
@@ -86,7 +89,6 @@ async function carregarDados() {
 
     const div = document.createElement("div");
     div.className = "curso-item";
-
     div.innerHTML = `
       <div class="bolinha ${cor}"></div>
       <div>
@@ -96,12 +98,22 @@ async function carregarDados() {
       </div>
     `;
 
-    if (diffDias < 0) {
-      vencidos.appendChild(div);
-    } else {
-      ativos.appendChild(div);
-    }
+    if (diffDias < 0) vencidos.push(div);
+    else ativos.push(div);
   });
+
+  const cA = document.getElementById("cursosAtivos");
+  const cV = document.getElementById("cursosVencidos");
+
+  if (ativos.length > 0) {
+    document.getElementById("tituloAtivos").style.display = "block";
+    ativos.forEach(div => cA.appendChild(div));
+  }
+
+  if (vencidos.length > 0) {
+    document.getElementById("tituloVencidos").style.display = "block";
+    vencidos.forEach(div => cV.appendChild(div));
+  }
 }
 
 carregarDados();
